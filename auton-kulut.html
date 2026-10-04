@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Auton kulut</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EEF0EA; --paper:#FFFFFF; --ink:#1C231D; --muted:#5B655C;
+  --line:#D6DACE; --moss:#3F6247; --moss-dk:#2C4632; --brass:#B8862F; --brass-bg:#F3E7CE;
+  --bad:#A5453A;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#171B17; --paper:#20251F; --ink:#EDEFE9; --muted:#9AA398;
+    --line:#333A31; --moss:#7FAE8B; --moss-dk:#5C8A6B; --brass:#D9AD5C; --brass-bg:#332A16;
+    --bad:#D97C71;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171B17; --paper:#20251F; --ink:#EDEFE9; --muted:#9AA398;
+  --line:#333A31; --moss:#7FAE8B; --moss-dk:#5C8A6B; --brass:#D9AD5C; --brass-bg:#332A16;
+  --bad:#D97C71;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;line-height:1.45}
+.wrap{max-width:1180px;margin:0 auto;padding:2.2rem 1.4rem 4rem}
+h1{font-family:'Fraunces',serif;font-weight:600;font-size:clamp(2rem,4.5vw,2.9rem);margin:0 0 .2rem;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 1.8rem;max-width:60ch}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:1.3rem 1.5rem;margin-bottom:1.4rem}
+.panel h2{font-family:'Fraunces',serif;font-weight:600;font-size:1.15rem;margin:0 0 .9rem;border-bottom:1px solid var(--line);padding-bottom:.6rem}
+.grid-assume{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:1rem}
+label{display:block;font-size:.82rem;color:var(--muted);margin-bottom:.3rem}
+input,select{width:100%;padding:.5rem .6rem;border:1px solid var(--line);border-radius:4px;background:var(--bg);color:var(--ink);font-family:'IBM Plex Mono',monospace;font-size:.92rem}
+select{font-family:'IBM Plex Sans',sans-serif}
+input:focus,select:focus{outline:2px solid var(--moss);outline-offset:1px}
+.cars{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem;margin-bottom:1.4rem}
+.car-card{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:1.1rem 1.2rem;position:relative}
+.car-card .top-row{display:flex;gap:.5rem;align-items:center;margin-bottom:.8rem}
+.car-card select.model-select{flex:1}
+.car-card .remove{background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;width:2rem;height:2rem;cursor:pointer;font-size:1rem;line-height:1}
+.car-card .remove:hover{border-color:var(--bad);color:var(--bad)}
+.field{margin-bottom:.65rem}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.addcar{background:none;border:1px dashed var(--line);border-radius:6px;color:var(--muted);padding:1.1rem;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;font-size:.95rem;min-height:100%;width:100%}
+.addcar:hover{border-color:var(--moss);color:var(--moss)}
+table{width:100%;border-collapse:collapse;font-family:'IBM Plex Mono',monospace;font-size:.88rem}
+th,td{text-align:right;padding:.5rem .6rem;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;color:var(--muted)}
+thead th{font-family:'IBM Plex Sans',sans-serif;color:var(--ink);font-weight:600;border-bottom:2px solid var(--ink)}
+tr.total td{font-weight:600;border-top:2px solid var(--ink);border-bottom:none;color:var(--moss-dk)}
+:root[data-theme="dark"] tr.total td, @media (prefers-color-scheme:dark){tr.total td{color:var(--moss)}}
+.bars{display:flex;flex-direction:column;gap:.7rem;margin-top:1.1rem}
+.bar-row{display:grid;grid-template-columns:120px 1fr 90px;align-items:center;gap:.7rem;font-size:.85rem}
+.bar-track{background:var(--bg);border:1px solid var(--line);border-radius:3px;height:22px;overflow:hidden}
+.bar-fill{background:var(--moss);height:100%;border-radius:2px 0 0 2px}
+.pill{display:inline-block;background:var(--brass-bg);color:var(--brass);border-radius:3px;padding:.15rem .5rem;font-size:.78rem;font-family:'IBM Plex Mono',monospace;margin-left:.4rem}
+.overflow-x{overflow-x:auto}
+.foot{color:var(--muted);font-size:.82rem;margin-top:1.6rem;max-width:70ch}
+.reset-btn{background:none;border:1px solid var(--line);color:var(--muted);border-radius:4px;padding:.4rem .8rem;cursor:pointer;font-size:.8rem;font-family:'IBM Plex Sans',sans-serif}
+.reset-btn:hover{border-color:var(--bad);color:var(--bad)}
+.chip{display:inline-flex;align-items:center;gap:.35rem;border:1px solid var(--line);border-radius:999px;padding:.22rem .7rem;font-size:.8rem;cursor:pointer;color:var(--muted);margin:0}
+.chip.on{border-color:var(--moss);color:var(--ink)}
+.chip input{width:auto;margin:0}
+details{border:1px solid var(--line);border-radius:5px;padding:.6rem .9rem;margin-bottom:.7rem}
+details summary{cursor:pointer;font-weight:600;font-family:'IBM Plex Sans',sans-serif}
+.formula-line{font-family:'IBM Plex Mono',monospace;font-size:.85rem;padding:.3rem 0;border-bottom:1px dashed var(--line);display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.formula-line:last-child{border-bottom:none;font-weight:600;color:var(--moss)}
+.formula-label{color:var(--muted);font-family:'IBM Plex Sans',sans-serif;min-width:11rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Auton kulut</h1>
+  <p class="sub">Vertaile 2–4 automallin kokonaiskuluja vuositasolla ja per kilometri. Esitäytetyt mallit sisältävät suuntaa-antavat arviot — tarkista ja muokkaa lukuja omien tietojesi mukaan.</p>
+
+  <div class="panel">
+    <h2>Yhteiset oletukset</h2>
+    <div class="grid-assume">
+      <div><label for="km">Ajoa vuodessa (km)</label><input type="number" id="km" value="18000" min="0"></div>
+      <div><label for="years">Omistusaika (vuotta)</label><input type="number" id="years" value="5" min="1"></div>
+    </div>
+    <div class="field" style="margin-top:.9rem">
+      <label>Bensiini/diesel (€/l) ajan myötä</label>
+      <div id="fuelSchedRows"></div>
+      <button class="reset-btn" onclick="addSchedSeg('fuel')" style="margin-top:.3rem">+ Lisää hintajakso</button>
+    </div>
+    <div class="field" style="margin-top:.9rem">
+      <label>Sähkö (€/kWh) ajan myötä</label>
+      <div id="elecSchedRows"></div>
+      <button class="reset-btn" onclick="addSchedSeg('elec')" style="margin-top:.3rem">+ Lisää hintajakso</button>
+    </div>
+  </div>
+
+  <div class="cars" id="cars"></div>
+
+  <div class="panel" id="historyPanel" style="display:none"></div>
+
+  <div class="panel overflow-x">
+    <h2>Vertailu vuositasolla (tästä eteenpäin)</h2>
+    <table id="resultTable"></table>
+    <div class="bars" id="bars"></div>
+  </div>
+
+  <div class="panel overflow-x" id="timelinePanel" style="display:none">
+    <h2>Kulujen kertymä ajassa</h2>
+    <div id="timelineModeBar" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.6rem"></div>
+    <div id="timelineFilterBar" style="display:flex;gap:.45rem;flex-wrap:wrap;align-items:center;margin-bottom:.8rem"></div>
+    <div id="timelineChart"></div>
+    <div id="timelineLegend" style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:.8rem;font-size:.85rem"></div>
+  </div>
+
+  <div class="panel overflow-x" id="depPanel" style="display:none">
+    <h2>Arvonalenema ajassa</h2>
+    <div id="depChart"></div>
+    <div id="depLegend" style="display:flex;flex-wrap:wrap;gap:1rem;margin-top:.8rem;font-size:.85rem"></div>
+  </div>
+
+  <div class="panel" id="formulaPanel"></div>
+
+  <button class="reset-btn" id="resetBtn">Nollaa oletusarvoihin</button>
+  <p class="foot">Arvonalenema lasketaan hankintahinnan (tai nykyisen auton kohdalla nykyisen arvon) ja arvioidun jälleenmyyntiarvon erotuksena jaettuna omistus/vertailuvuosilla. Huolto ja renkaat lasketaan €/km-kertoimesta ajokilometrien mukaan. Merkitse enintään yksi kortti "Omistan tämän auton nyt" -valinnalla — sille käytetään nykyistä markkina-arvoa hankintahinnan sijaan eikä rahoituskuluja lasketa, jotta vertailu kuvaa oikeaa päätöstä (pidä nykyinen vs. osta jokin muu). Alkuperäinen ostohinta näytetään vain tiedoksi eikä vaikuta laskentaan, koska jo maksettu hinta ei ole relevantti tulevaa päätöstä tehdessä. Muille autoille voit määrittää rahoitusosuuden ja koron — rahoituskulu on lainan korko-osuus jaettuna vertailuvuosille, ei sisällä lyhennystä. Tallennat muokkaukset selaimeesi automaattisesti — tiedot eivät lähde mihinkään.</p>
+</div>
+
+<script>
+const PRESETS = {
+  "Toyota Corolla 1.8 Hybrid": {price:29500, usedPrice:19000, resale:14000, fuel:"bensiini", cons:4.2, insurance:650, tax:180, maint:0.06, tires:220},
+  "Toyota RAV4 Hybrid AWD": {price:42000, usedPrice:28000, resale:20000, fuel:"bensiini", cons:5.4, insurance:820, tax:260, maint:0.07, tires:280},
+  "Toyota Yaris 1.5 Hybrid": {price:24500, usedPrice:15500, resale:11500, fuel:"bensiini", cons:3.8, insurance:580, tax:150, maint:0.05, tires:190},
+  "Škoda Octavia 2.0 TDI": {price:33000, usedPrice:20000, resale:14500, fuel:"diesel", cons:4.6, insurance:700, tax:240, maint:0.07, tires:230},
+  "Volkswagen Golf 1.5 TSI": {price:31000, usedPrice:19000, resale:13500, fuel:"bensiini", cons:5.8, insurance:700, tax:190, maint:0.07, tires:220},
+  "Nissan Qashqai 1.3 DIG-T": {price:33500, usedPrice:20500, resale:14500, fuel:"bensiini", cons:6.1, insurance:750, tax:210, maint:0.07, tires:250},
+  "Volvo XC60 B4": {price:52000, usedPrice:32000, resale:24000, fuel:"diesel", cons:5.6, insurance:950, tax:260, maint:0.09, tires:300},
+  "Kia Niro Hybrid": {price:30500, usedPrice:19000, resale:14000, fuel:"bensiini", cons:4.4, insurance:640, tax:180, maint:0.06, tires:220},
+  "Tesla Model 3 (perus)": {price:39500, usedPrice:24000, resale:18500, fuel:"sähkö", cons:15.5, insurance:780, tax:110, maint:0.04, tires:260},
+  "Škoda Kodiaq 2.0 TDI": {price:41000, usedPrice:25000, resale:18000, fuel:"diesel", cons:5.8, insurance:850, tax:270, maint:0.08, tires:280},
+  "Škoda Superb 2.0 TDI": {price:38500, usedPrice:23500, resale:16500, fuel:"diesel", cons:4.9, insurance:780, tax:250, maint:0.07, tires:260},
+  "Volkswagen ID.7": {price:55000, usedPrice:38000, resale:28000, fuel:"sähkö", cons:17.0, insurance:850, tax:100, maint:0.04, tires:270},
+  "Tesla Model Y": {price:48000, usedPrice:30000, resale:22000, fuel:"sähkö", cons:16.0, insurance:800, tax:100, maint:0.04, tires:270},
+  "Kia EV9": {price:72000, usedPrice:46000, resale:34000, fuel:"sähkö", cons:22.0, insurance:1050, tax:130, maint:0.05, tires:320},
+  "Kia EV6": {price:46000, usedPrice:29000, resale:21000, fuel:"sähkö", cons:16.5, insurance:780, tax:95, maint:0.04, tires:250},
+  "Toyota bZ4X Touring": {price:48000, usedPrice:30000, resale:22000, fuel:"sähkö", cons:17.5, insurance:780, tax:100, maint:0.04, tires:260},
+  "Toyota C-HR+": {price:42000, usedPrice:27000, resale:20000, fuel:"sähkö", cons:16.5, insurance:700, tax:95, maint:0.04, tires:240},
+  "BYD Tang": {price:55000, usedPrice:35000, resale:26000, fuel:"sähkö", cons:22.0, insurance:900, tax:110, maint:0.05, tires:300},
+  "Hyundai Ioniq 5": {price:47000, usedPrice:29500, resale:21500, fuel:"sähkö", cons:17.0, insurance:770, tax:100, maint:0.04, tires:260},
+  "Peugeot e-5008": {price:53000, usedPrice:33500, resale:24500, fuel:"sähkö", cons:18.5, insurance:820, tax:105, maint:0.05, tires:280},
+  "Muu / oma malli": {price:0, usedPrice:0, resale:0, fuel:"bensiini", cons:0, insurance:0, tax:0, maint:0, tires:0}
+};
+const COLORS = ["var(--moss)","var(--brass)","#5C7A9C","#9C6B5C"];
+const STORE_KEY = "auton-kulut-v1";
+let state = null;
+
+function defaultState(){
+  return {
+    km:18000, years:5,
+    fuelSchedule:[{price:1.75}], elecSchedule:[{price:0.18}],
+    cars:[ mkCar("Toyota Corolla 1.8 Hybrid"), mkCar("Škoda Octavia 2.0 TDI") ]
+  };
+}
+const YEAR_NOW = new Date().getFullYear();
+const DEFAULT_DEP_CURVE = [20,15,12,10,8]; // %-pudotus per vuosi, viimeinen arvo toistuu
+// Tyypilliset huoltovälit (km) ja -kustannukset polttoainetyypeittäin. Sykli toistuu.
+const MAINT_SCHEDULE = {
+  bensiini: [{km:15000,cost:200},{km:30000,cost:300},{km:45000,cost:200},{km:60000,cost:450}],
+  diesel:   [{km:15000,cost:250},{km:30000,cost:350},{km:45000,cost:250},{km:60000,cost:550}],
+  sähkö:    [{km:20000,cost:150},{km:40000,cost:200},{km:60000,cost:150},{km:80000,cost:300}],
+};
+function scheduledMaintCost(fuel, totalKm){
+  const sched = MAINT_SCHEDULE[fuel] || MAINT_SCHEDULE.bensiini;
+  const cycleLen = sched[sched.length-1].km;
+  const cycles = Math.floor(Math.max(0,totalKm)/cycleLen);
+  const cycleCost = sched.reduce((s,e)=>s+e.cost,0);
+  let cost = cycles*cycleCost;
+  const rem = totalKm - cycles*cycleLen;
+  sched.forEach(e=>{ if(e.km<=rem) cost+=e.cost; });
+  return cost;
+}
+// Palauttaa suhteelliset arvo-kertoimet v(0..N), v(0)=1, epälineaarista muotoa varten.
+function curveRawValues(car, N){
+  const p = PRESETS[car.name];
+  const v = [1];
+  if(p && p.usedPrice && p.price){
+    const rate = Math.pow(p.usedPrice/p.price, 1/3.5);
+    for(let k=1;k<=N;k++) v.push(Math.pow(rate,k));
+  } else {
+    const curve = (car.depCurve && car.depCurve.length) ? car.depCurve : DEFAULT_DEP_CURVE;
+    for(let k=1;k<=N;k++) v.push(v[k-1]*(1-(curve[Math.min(k-1,curve.length-1)]||0)/100));
+  }
+  return v;
+}
+// Jakaa kokonaisarvonaleneman (totalDep) N vuodelle käyrän muodon mukaan, summa säilyy.
+function depSchedule(car, totalDep, N){
+  if(N<=0) return [];
+  const v = curveRawValues(car, N);
+  const rawTotal = v[0]-v[N];
+  const scale = rawTotal>0 ? totalDep/rawTotal : totalDep/N;
+  const out = [];
+  for(let k=1;k<=N;k++) out.push(rawTotal>0 ? (v[k-1]-v[k])*scale : totalDep/N);
+  return out;
+}
+// Jakaa kokonaishuoltokulun (totalMaint) N vuodelle huolto-ohjelman mukaan, summa säilyy.
+function maintSchedule(car, totalMaint, N){
+  if(N<=0) return [];
+  const km = state.km;
+  const raw = [];
+  for(let k=0;k<=N;k++) raw.push(scheduledMaintCost(car.fuel, km*k));
+  const rawTotal = raw[N];
+  const scale = rawTotal>0 ? totalMaint/rawTotal : totalMaint/N;
+  const out = [];
+  for(let k=1;k<=N;k++) out.push(rawTotal>0 ? (raw[k]-raw[k-1])*scale : totalMaint/N);
+  return out;
+}
+// Hintajakso: segmentit [{price, months}], viimeinen jatkuu loppuun asti. m = kuukausi-indeksi 0.. nykyhetkestä eteenpäin.
+function priceAt(schedule, m){
+  let acc = 0;
+  for(let i=0;i<schedule.length;i++){
+    const seg = schedule[i];
+    const dur = (i<schedule.length-1) ? Math.max(1, seg.months||1) : Infinity;
+    if(m < acc+dur) return seg.price;
+    acc += dur;
+  }
+  return schedule[schedule.length-1].price;
+}
+function scheduleEnergyTotal(schedule, consPerMonth, months){
+  let sum = 0;
+  for(let m=0;m<months;m++) sum += consPerMonth*priceAt(schedule,m);
+  return sum;
+}
+function carSchedule(car){ return car.fuel==='sähkö' ? state.elecSchedule : state.fuelSchedule; }
+function ageCurvePrice(name, age){
+  const p = PRESETS[name];
+  if(!p || !p.usedPrice || !p.price) return null;
+  const rate = Math.pow(p.usedPrice / p.price, 1/3.5); // vuotuinen arvonsäilytyskerroin, kalibroitu ~3.5v preset-hintaan
+  const floor = p.price * 0.12;
+  return Math.max(floor, p.price * Math.pow(rate, Math.max(0,age)));
+}
+function mkCar(name, year, owned){
+  const p = PRESETS[name] || PRESETS["Muu / oma malli"];
+  year = year || YEAR_NOW;
+  const age = YEAR_NOW - year;
+  const price = ageCurvePrice(name, age) ?? p.price;
+  const resale = ageCurvePrice(name, age + (state ? state.years : 5)) ?? p.resale;
+  return {name, year, owned: !!owned, price:Math.round(price), resale:Math.round(resale), origPrice:Math.round(price), purchaseYear:year, fuel:p.fuel, cons:p.cons, insurance:p.insurance, tax:p.tax, maint:p.maint, tires:p.tires, downPayment:0, loanMonths:60, balloon:0, financeRate:5.5, monthlyFee:0, setupFee:0, depCurve: DEFAULT_DEP_CURVE.slice()};
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if(raw) state = JSON.parse(raw);
+  }catch(e){}
+  if(!state) state = defaultState();
+  if(!state.fuelSchedule || !state.fuelSchedule.length) state.fuelSchedule = [{price: state.fuelPrice || 1.75}];
+  if(!state.elecSchedule || !state.elecSchedule.length) state.elecSchedule = [{price: state.elecPrice || 0.18}];
+  state.cars.forEach(c=>{
+    if(c.owned === undefined) c.owned = false;
+    if(c.downPayment === undefined) c.downPayment = 0;
+    if(c.loanMonths === undefined) c.loanMonths = 60;
+    if(c.balloon === undefined) c.balloon = 0;
+    if(c.financeRate === undefined) c.financeRate = 5.5;
+    if(c.monthlyFee === undefined) c.monthlyFee = 0;
+    if(c.setupFee === undefined) c.setupFee = 0;
+    if(!c.depCurve || !c.depCurve.length) c.depCurve = DEFAULT_DEP_CURVE.slice();
+    if(c.year === undefined) c.year = YEAR_NOW;
+    if(c.origPrice === undefined) c.origPrice = c.price;
+    if(c.purchaseYear === undefined) c.purchaseYear = c.year;
+  });
+}
+function save(){
+  try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){}
+}
+
+function renderAssumptions(){
+  document.getElementById('km').value = state.km;
+  document.getElementById('years').value = state.years;
+  renderSchedRows('fuel'); renderSchedRows('elec');
+}
+function schedKey(which){ return which==='fuel' ? 'fuelSchedule' : 'elecSchedule'; }
+function renderSchedRows(which){
+  const key = schedKey(which), arr = state[key], unit = which==='fuel' ? '€/l' : '€/kWh';
+  const box = document.getElementById(which+'SchedRows');
+  box.innerHTML = arr.map((seg,i)=>{
+    const last = i===arr.length-1;
+    return `<div class="field-row" style="align-items:end;margin-bottom:.4rem">
+      <div><label>${i===0?'Hinta nyt':'Hinta jakso '+(i+1)+' alkaen'} (${unit})</label>
+        <input type="number" step="0.01" min="0" value="${seg.price}" onchange="setSchedSeg('${which}',${i},'price',this.value)"></div>
+      <div>${last
+        ? `<label style="color:var(--muted)">Kesto</label><input type="text" value="jatkuu omistusajan loppuun" disabled>`
+        : `<label>Kesto (kk)</label><input type="number" min="1" value="${seg.months||12}" onchange="setSchedSeg('${which}',${i},'months',this.value)">`}</div>
+      ${arr.length>1 ? `<button class="remove" title="Poista jakso" onclick="removeSchedSeg('${which}',${i})">×</button>` : '<span></span>'}
+    </div>`;
+  }).join('') + `<button class="reset-btn" onclick="addSchedSeg('${which}')">+ Lisää hintajakso</button>`;
+}
+function setSchedSeg(which,i,field,val){
+  const arr = state[schedKey(which)];
+  arr[i][field] = field==='months' ? Math.max(1, parseInt(val)||1) : Math.max(0, parseFloat(val)||0);
+  save(); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas();
+}
+function addSchedSeg(which){
+  const arr = state[schedKey(which)], prevLast = arr[arr.length-1];
+  if(prevLast.months===undefined) prevLast.months = 12;
+  arr.push({price: prevLast.price});
+  save(); renderSchedRows(which); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas();
+}
+function removeSchedSeg(which,i){
+  const arr = state[schedKey(which)];
+  arr.splice(i,1);
+  save(); renderSchedRows(which); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas();
+}
+
+function optionsHtml(selected){
+  const keys = Object.keys(PRESETS).filter(k=>k!=="Muu / oma malli").sort((a,b)=>a.localeCompare(b,'fi'));
+  keys.push("Muu / oma malli");
+  return keys.map(k=>`<option value="${k}" ${k===selected?'selected':''}>${k}</option>`).join('');
+}
+
+function renderCars(){
+  const el = document.getElementById('cars');
+  el.innerHTML = '';
+  state.cars.forEach((car,i)=>{
+    const card = document.createElement('div');
+    card.className = 'car-card';
+    if(car.owned) card.style.borderColor = 'var(--moss)';
+    if(car.owned) card.style.borderWidth = '2px';
+    card.innerHTML = `
+      <div class="top-row">
+        <select class="model-select" data-i="${i}">${optionsHtml(car.name)}</select>
+        <button class="remove" data-i="${i}" title="Poista" ${state.cars.length<=1?'disabled':''}>×</button>
+      </div>
+      <div class="field" style="display:flex;align-items:center;gap:.5rem;margin-bottom:.9rem">
+        <input type="checkbox" class="owned-check" data-i="${i}" id="owned-${i}" ${car.owned?'checked':''} style="width:auto">
+        <label for="owned-${i}" style="margin:0;color:${car.owned?'var(--moss)':'var(--muted)'}">Omistan tämän auton nyt${car.owned?' ✓':''}</label>
+      </div>
+      <div class="field"><label>Oma nimi (valinnainen)</label><input type="text" data-f="label" data-i="${i}" value="${car.label||''}" placeholder="${car.name}"></div>
+      <div class="field">
+        <label>Valmistusvuosi</label>
+        <input type="number" class="year-input" data-i="${i}" value="${car.year}" min="1995" max="${new Date().getFullYear()+1}" step="1">
+      </div>
+      <div class="field-row">
+        <div><label>${car.owned ? 'Nykyinen arvo (€)' : 'Hankintahinta (€)'}</label><input type="number" data-f="price" data-i="${i}" value="${car.price}"></div>
+        <div><label>Jälleenmyyntiarvo (€)</label><input type="number" data-f="resale" data-i="${i}" value="${car.resale}"></div>
+      </div>
+      ${car.name==="Muu / oma malli" ? `
+      <div class="field"><label>Arvonaleneman jakauma (%/vuosi, pilkuilla — viimeinen toistuu)</label><input type="text" class="depcurve-input" data-i="${i}" value="${car.depCurve.join(',')}"></div>` : ''}
+      ${car.owned ? `
+      <div class="field-row">
+        <div><label>Alkuperäinen ostohinta (€)</label><input type="number" data-f="origPrice" data-i="${i}" value="${car.origPrice||0}"></div>
+        <div><label>Ostovuosi</label><input type="number" data-f="purchaseYear" data-i="${i}" value="${car.purchaseYear||car.year}" min="1995" max="${YEAR_NOW}"></div>
+      </div>` : ''}
+      <div class="field-row">
+        <div><label>Käsiraha (€)</label><input type="number" data-f="downPayment" data-i="${i}" value="${car.downPayment}" min="0"></div>
+        <div><label>Laina-aika (kk)</label><input type="number" data-f="loanMonths" data-i="${i}" value="${car.loanMonths}" min="0"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Jäännösarvo / viim. suurempi erä (€)</label><input type="number" data-f="balloon" data-i="${i}" value="${car.balloon}" min="0"></div>
+        <div><label>Lainan korko (%)</label><input type="number" step="0.1" data-f="financeRate" data-i="${i}" value="${car.financeRate}" min="0"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Käsittely (€/kk)</label><input type="number" data-f="monthlyFee" data-i="${i}" value="${car.monthlyFee}" min="0"></div>
+        <div><label>Perustamismaksu (€)</label><input type="number" data-f="setupFee" data-i="${i}" value="${car.setupFee}" min="0"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Käyttövoima</label>
+          <select data-f="fuel" data-i="${i}">
+            <option value="bensiini" ${car.fuel==='bensiini'?'selected':''}>Bensiini</option>
+            <option value="diesel" ${car.fuel==='diesel'?'selected':''}>Diesel</option>
+            <option value="sähkö" ${car.fuel==='sähkö'?'selected':''}>Sähkö</option>
+          </select>
+        </div>
+        <div><label>Kulutus (${car.fuel==='sähkö'?'kWh':'l'}/100km)</label><input type="number" step="0.1" data-f="cons" data-i="${i}" value="${car.cons}"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Vakuutus (€/v)</label><input type="number" data-f="insurance" data-i="${i}" value="${car.insurance}"></div>
+        <div><label>Ajoneuvovero (€/v)</label><input type="number" data-f="tax" data-i="${i}" value="${car.tax}"></div>
+      </div>
+      <div class="field-row">
+        <div><label>Huolto/korjaus (€/km)</label><input type="number" step="0.01" data-f="maint" data-i="${i}" value="${car.maint}"></div>
+        <div><label>Renkaat (€/v)</label><input type="number" data-f="tires" data-i="${i}" value="${car.tires}"></div>
+      </div>
+    `;
+    el.appendChild(card);
+  });
+  if(state.cars.length < 4){
+    const btn = document.createElement('button');
+    btn.className = 'addcar';
+    btn.textContent = '+ Lisää auto vertailuun';
+    btn.onclick = ()=>{ state.cars.push(mkCar("Muu / oma malli")); save(); renderAll(); };
+    el.appendChild(btn);
+  }
+
+  el.querySelectorAll('.model-select').forEach(s=>s.addEventListener('change', e=>{
+    const i = +e.target.dataset.i;
+    state.cars[i] = mkCar(e.target.value);
+    save(); renderAll();
+  }));
+  el.querySelectorAll('.remove').forEach(b=>b.addEventListener('click', e=>{
+    const i = +e.target.dataset.i;
+    state.cars.splice(i,1); save(); renderAll();
+  }));
+  el.querySelectorAll('.owned-check').forEach(cb=>cb.addEventListener('change', e=>{
+    const i = +e.target.dataset.i;
+    const nowOwned = e.target.checked;
+    state.cars.forEach((c,idx)=>{ c.owned = (idx===i) ? nowOwned : false; });
+    save(); renderAll();
+  }));
+  el.querySelectorAll('input[data-f]').forEach(inp=>inp.addEventListener('input', e=>{
+    const i = +e.target.dataset.i, f = e.target.dataset.f;
+    const car = state.cars[i];
+    car[f] = (f==='label') ? e.target.value : parseFloat(e.target.value)||0;
+    save(); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas();
+  }));
+  el.querySelectorAll('select[data-f="fuel"]').forEach(s=>s.addEventListener('change', e=>{
+    const i = +e.target.dataset.i;
+    state.cars[i].fuel = e.target.value;
+    save(); renderAll();
+  }));
+  el.querySelectorAll('.year-input').forEach(inp=>inp.addEventListener('change', e=>{
+    const i = +e.target.dataset.i;
+    const car = state.cars[i];
+    car.year = parseInt(e.target.value) || YEAR_NOW;
+    const age = YEAR_NOW - car.year;
+    const estPrice = ageCurvePrice(car.name, age);
+    const estResale = ageCurvePrice(car.name, age + state.years);
+    if(estPrice != null) car.price = Math.round(estPrice);
+    if(estResale != null) car.resale = Math.round(estResale);
+    save(); renderAll();
+  }));
+  el.querySelectorAll('.depcurve-input').forEach(inp=>inp.addEventListener('change', e=>{
+    const i = +e.target.dataset.i;
+    const vals = e.target.value.split(',').map(s=>parseFloat(s.trim())).filter(n=>!isNaN(n) && n>=0);
+    state.cars[i].depCurve = vals.length ? vals : DEFAULT_DEP_CURVE.slice();
+    save(); renderAll();
+  }));
+}
+
+// Laskee lainan tilan (jäljellä oleva pääoma, maksettu korko, maksut) kuukaudella "months" lainan alusta.
+function loanState(basePrice, downPayment, loanMonths, balloon, ratePct, monthlyFee, setupFee, months){
+  const L = Math.max(0, basePrice - (downPayment||0));
+  const N = Math.max(0, loanMonths||0);
+  const r = (ratePct||0)/100/12;
+  const bal0 = balloon||0;
+  const m = Math.max(0, Math.min(months, N));
+  if(L<=0 || N<=0) return {pmt:0, balance:0, interestPaid:0, feesPaid:(monthlyFee||0)*m, setup:(months>0?(setupFee||0):0)};
+  let pmt;
+  if(r>0) pmt = (L - bal0/Math.pow(1+r,N)) * r / (1-Math.pow(1+r,-N));
+  else pmt = (L-bal0)/N;
+  let balance;
+  if(r>0) balance = L*Math.pow(1+r,m) - pmt*(Math.pow(1+r,m)-1)/r;
+  else balance = L - pmt*m;
+  if(months >= N) balance = bal0; // laina-aika täynnä: jäljellä vain mahdollinen jäännösarvo/loppuerä
+  balance = Math.max(0, balance);
+  const interestPaid = pmt*m - (L - balance);
+  const feesPaid = (monthlyFee||0)*m;
+  const setup = months>0 ? (setupFee||0) : 0;
+  return {pmt: pmt + (monthlyFee||0), balance, interestPaid: Math.max(0,interestPaid), feesPaid, setup};
+}
+function carLoanState(car, months){
+  const basePrice = car.owned ? car.origPrice : car.price;
+  return loanState(basePrice, car.downPayment, car.loanMonths, car.balloon, car.financeRate, car.monthlyFee, car.setupFee, months);
+}
+function computeCar(car){
+  const km = state.km, years = Math.max(1, Math.round(state.years));
+  const schedule = carSchedule(car);
+  const consPerMonth = (car.cons/100) * km/12;
+  const energy = scheduleEnergyTotal(schedule, consPerMonth, years*12) / years; // vuositason keskiarvo, pysyy yhteismitallisena muiden rivien kanssa
+  const pricePerUnit = km>0 ? energy/((car.cons/100)*km) : priceAt(schedule,0);
+  const depreciation = Math.max(0, (car.price - car.resale) / years);
+  const insurance = car.insurance;
+  const tax = car.tax;
+  const maint = car.maint * km;
+  const tires = car.tires;
+  // Rahoitus: omistetulle autolle laina alkoi ostovuonna, muille nyt.
+  const monthsNow = car.owned ? Math.max(0, YEAR_NOW - (car.purchaseYear||car.year))*12 : 0;
+  const monthsSale = monthsNow + years*12;
+  const lsNow = carLoanState(car, monthsNow);
+  const lsSale = carLoanState(car, monthsSale);
+  const interestPeriod = lsSale.interestPaid - lsNow.interestPaid;
+  const feesPeriod = lsSale.feesPaid - lsNow.feesPaid;
+  const setupPeriod = monthsNow===0 ? lsSale.setup : 0;
+  const shortfall = Math.max(0, lsSale.balance - car.resale);
+  const finance = (interestPeriod + feesPeriod + setupPeriod) / years; // alijäämä sisältyy jo arvonalenemaan (hinta − jälleenmyyntiarvo)
+  const total = energy + depreciation + insurance + tax + maint + tires + finance;
+  // Kuukausierä (lyhennys+korko+kk-maksu yhdessä) ja kauden kokonaismaksut — samaa lukua autokaupat usein kutsuvat "rahoituksen kokonaiskuluksi".
+  // Tämä EI ole osa Yhteensä-riviä, koska lyhennys (auton hinnan maksaminen) näkyy jo arvonalenemana.
+  const monthlyPayment = lsNow.pmt || 0;
+  const lf = loanFlows(car, monthsNow, years*12);
+  let installmentsTotal = 0, balloonInPeriod = 0;
+  for(let m=1;m<=years*12;m++){ installmentsTotal += lf.pmt[m]; balloonInPeriod += lf.balloon[m]; }
+  const financeGrossTotal = installmentsTotal + balloonInPeriod; // lyhennys+korko+kk-maksut, koko kausi
+  const principalPeriod = Math.max(0, financeGrossTotal - (interestPeriod + feesPeriod));
+  return {
+    energy, depreciation, insurance, tax, maint, tires, finance, shortfall, total,
+    perKm: km>0? total/km : 0, label: (car.label || car.name) + (car.owned?' 🏠':''),
+    years, km, cons: car.cons, pricePerUnit, fuel: car.fuel,
+    price: car.price, resale: car.resale, maintRate: car.maint,
+    interestPeriod, feesPeriod, setupPeriod,
+    monthlyPayment, financeGrossTotal, installmentsTotal, balloonInPeriod, principalPeriod
+  };
+}
+
+function computeHistorical(car){
+  const km = state.km;
+  const yearsOwned = Math.max(1, YEAR_NOW - (car.purchaseYear || car.year));
+  const dep = Math.max(0, (car.origPrice - car.price)) / yearsOwned;
+  const pricePerUnit = priceAt(carSchedule(car), 0);
+  const energy = (car.cons/100) * km * pricePerUnit;
+  const ls = carLoanState(car, yearsOwned*12);
+  const financeToDate = ls.interestPaid + ls.feesPaid + ls.setup;
+  const finance = financeToDate / yearsOwned;
+  const shortfallNow = Math.max(0, ls.balance - car.price);
+  const otherPerYear = energy + car.insurance + car.tax + car.maint*km + car.tires + finance;
+  const perYear = dep + otherPerYear;
+  return {yearsOwned, dep, otherPerYear, finance, energy, perYear, toDate: perYear*yearsOwned, monthlyPayment: ls.pmt, loanBalanceNow: ls.balance, shortfallNow, label: car.label || car.name};
+}
+function renderHistory(){
+  const owned = state.cars.find(c=>c.owned);
+  const panel = document.getElementById('historyPanel');
+  if(!owned){ panel.style.display='none'; return; }
+  const h = computeHistorical(owned);
+  const fc = computeCar(owned);
+  const forwardTotal = fc.total * fc.years;
+  const grandTotal = h.toDate + forwardTotal;
+  const rawCashTotal = grandTotal + owned.resale; // ei vähennä jälleenmyyntiarvoa — vertailukelpoinen sopimuksen "luottohinta"-lukuun
+  panel.style.display = 'block';
+  panel.innerHTML = `
+    <h2>${h.label} — kulut ostohetkestä tähän mennessä</h2>
+    <table>
+      <tbody>
+        <tr><td>Omistusaika tähän mennessä</td><td>${h.yearsOwned} vuotta</td></tr>
+        <tr><td>Arvonalenema (ostohinta → nykyarvo, keskim. €/v)</td><td>${fmt(h.dep)} €</td></tr>
+        <tr><td>Rahoituskulut (korko+maksut, keskim. €/v)</td><td>${fmt(h.finance)} €</td></tr>
+        <tr><td>Muut kulut keskimäärin (€/v, nyk. tasolla arvioituna)</td><td>${fmt(h.otherPerYear - h.finance)} €</td></tr>
+        <tr class="total"><td>Yhteensä / vuosi tähän mennessä</td><td>${fmt(h.perYear)} €</td></tr>
+        <tr class="total"><td>Arvioidut kokonaiskulut tähän mennessä (${h.yearsOwned} v)</td><td>${fmt(h.toDate)} €</td></tr>
+        <tr><td>Kuukausierä (arvio, sis. käsittelymaksun)</td><td>${fmt(h.monthlyPayment)} €/kk</td></tr>
+        <tr><td>Jäljellä oleva laina nyt (arvio)</td><td>${fmt(h.loanBalanceNow)} €</td></tr>
+        ${h.shortfallNow>0 ? `<tr><td style="color:var(--bad)">Alijäämä nyt (laina > nykyarvo)</td><td style="color:var(--bad)">${fmt(h.shortfallNow)} €</td></tr>` : ''}
+      </tbody>
+    </table>
+    <table style="margin-top:.6rem">
+      <tbody>
+        <tr><td>+ Arvioidut kulut tästä eteenpäin (${fc.years} v, ks. vertailutaulukko alla)</td><td>${fmt(forwardTotal)} €</td></tr>
+        <tr class="total" style="border-top:2px solid var(--moss)"><td>= Arvioidut kokonaiskulut koko omistusajalta (osto → suunniteltu myynti, ${h.yearsOwned+fc.years} v)</td><td style="color:var(--moss)">${fmt(grandTotal)} €</td></tr>
+      </tbody>
+    </table>
+    <p class="foot" style="margin-top:.8rem">Yllä "tähän mennessä" kattaa vain ostosta nykyhetkeen kuluneen ajan (${h.yearsOwned} v) — tämä EI ole koko omistusajan kulu, vaikka sisältääkin myös rahoituksen kokonaismaksut (lyhennys mukaan lukien) siltä ajalta. Koko omistusajan rivi laskee yhteen tähänastisen ja tulevan osuuden. Muiden kuluerien (vakuutus, vero, huolto, renkaat, energia) historiaa ei tunneta tarkasti, joten ne on arvioitu nykyisillä syöttämilläsi vuositasoilla koko omistusajalle. Vertailutaulukko alla laskee tästä hetkestä eteenpäin: jos laina-aika on pidempi kuin jäljellä oleva omistusaika ja jäljellä oleva laina on myyntihetkellä suurempi kuin jälleenmyyntiarvo, erotus maksetaan käteisellä. Se näkyy kuvaajan Kassavirta-näkymässä eikä ole erillinen lisäkulu, koska se sisältyy jo arvonalenemaan.</p>
+  `;
+}
+
+function fmt(n){ return Math.round(n).toLocaleString('fi-FI'); }
+function renderResults(){
+  const rows = [
+    ['Energia (polttoaine/sähkö)','energy'],
+    ['Arvonalenema','depreciation'],
+    ['Vakuutus','insurance'],
+    ['Ajoneuvovero','tax'],
+    ['Huolto ja korjaukset','maint'],
+    ['Renkaat','tires'],
+    ['Rahoituskulut (korko, maksut)','finance'],
+  ];
+  const results = state.cars.map(computeCar);
+  const table = document.getElementById('resultTable');
+  let head = '<thead><tr><th>Kuluerä</th>' + results.map(r=>`<th>${r.label}</th>`).join('') + '</tr></thead>';
+  let body = '<tbody>' + rows.map(([label,key])=>
+    `<tr><td>${label}</td>${results.map(r=>`<td>${fmt(r[key])} €</td>`).join('')}</tr>`
+  ).join('') + `<tr class="total"><td>Yhteensä / vuosi</td>${results.map(r=>`<td>${fmt(r.total)} €</td>`).join('')}</tr>` +
+  `<tr><td>€ / km</td>${results.map(r=>`<td>${r.perKm.toFixed(2)} €</td>`).join('')}</tr>` +
+  '</tbody>';
+  table.innerHTML = head + body;
+
+  const maxTotal = Math.max(...results.map(r=>r.total), 1);
+  const bars = document.getElementById('bars');
+  bars.innerHTML = results.map((r,i)=>`
+    <div class="bar-row">
+      <div>${r.label}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(r.total/maxTotal*100).toFixed(1)}%;background:${COLORS[i%4]}"></div></div>
+      <div>${fmt(r.total)} €<span class="pill">${r.perKm.toFixed(2)} €/km</span></div>
+    </div>`).join('');
+}
+
+// ===== Reaaliaikainen kuukausimalli: kulut kirjataan todellisiin ajankohtiin =====
+const TIRE_KM = 60000; // yhden rengassarjan oletettu kestoikä (km)
+// Arvonalenema-kertymä kuukausittain (sama käyrä kuin vuositaulukossa, interpoloitu kuukausille).
+function depCumMonthly(car, totalDep, M){
+  const N = Math.max(1, Math.ceil(M/12));
+  const v = curveRawValues(car, N);
+  const val = t => { const k = Math.min(N-1, Math.floor(t)); return v[k]*Math.pow(v[k+1]/v[k], t-k); };
+  const v0 = val(0), raw = v0 - val(M/12), out = [];
+  for(let m=0;m<=M;m++) out.push(raw>0 ? totalDep*(v0-val(m/12))/raw : totalDep*m/M);
+  return out;
+}
+// Huolto-/rengastapahtumat mittarilukeman mukaan (odo0 -> odo1), kuukausi jakson alusta.
+function eventMonths(sched, odo0, odo1){
+  const ev = [], cyc = sched[sched.length-1].km, kmY = state.km;
+  if(!(kmY>0) || odo1<=odo0) return ev;
+  for(let c=0; c*cyc<=odo1; c++) sched.forEach(e=>{
+    const odo = c*cyc + e.km;
+    if(odo>odo0 && odo<=odo1) ev.push({m:Math.max(1,Math.round((odo-odo0)/kmY*12)), cost:e.cost});
+  });
+  return ev;
+}
+// Sijoittaa jakson kokonaiskulun tapahtumiin (summa säilyy); jos tapahtumia ei osu jaksolle, tasaa kuukausille.
+function placeEvents(ev, total, M, sm, st){
+  const raw = ev.reduce((s,e)=>s+e.cost,0);
+  if(raw>0) ev.forEach(e=>{ st[Math.min(M,e.m)] += e.cost*total/raw; });
+  else for(let m=1;m<=M;m++) sm[m] += total/M;
+}
+// Lainan kassavirrat ja korot kuukausittain; off = lainakuukaudet ennen jakson alkua.
+function loanFlows(car, off, M){
+  const z = () => new Array(M+1).fill(0);
+  const out = {pmt:z(), interest:z(), fee:z(), balloon:z(), payoff:0};
+  const base = car.owned ? car.origPrice : car.price, n = car.loanMonths||0;
+  if(base-(car.downPayment||0)<=0 || n<=0) return out;
+  const ls = k => loanState(base, car.downPayment, n, car.balloon, car.financeRate, car.monthlyFee, car.setupFee, k);
+  let prev = ls(off);
+  for(let m=1;m<=M;m++){
+    const cur = ls(off+m);
+    if(off+m<=n){ out.pmt[m]=cur.pmt; out.fee[m]=car.monthlyFee||0; out.interest[m]=cur.interestPaid-prev.interestPaid; }
+    if(off+m===n) out.balloon[m] = car.balloon||0;
+    prev = cur;
+  }
+  if(off+M<n) out.payoff = ls(off+M).balance;
+  return out;
+}
+// mode 'cost': arvonalenema + korot + maksut + käyttökulut. mode 'cash': maksut (käsiraha, erät, loppuerä) ja myynti.
+const TL_CATS = {
+  cost:[['dep','Arvonalenema'],['fin','Rahoituskulut (korko, maksut)'],['energy','Energia'],['ins','Vakuutus'],['tax','Ajoneuvovero'],['maint','Huolto'],['tires','Renkaat']],
+  cash:[['down','Käsiraha / ostohinta'],['pmt','Kuukausierät'],['balloon','Loppuerä'],['setup','Perustamismaksu'],['sale','Myynti (laina pois − myyntihinta)'],['energy','Energia'],['ins','Vakuutus'],['tax','Ajoneuvovero'],['maint','Huolto'],['tires','Renkaat']]
+};
+const tlOn = k => !(state.tlOff && state.tlOff[k]);
+function monthlyPeriod(car, mode, o){
+  const M=o.M, sm=new Array(M+1).fill(0), st=new Array(M+1).fill(0), cash = mode==='cash';
+  const lf = loanFlows(car, o.loanOff, M), dep = depCumMonthly(car, o.totalDep, M);
+  const insTaxPerM = ((tlOn('ins')?o.insY:0) + (tlOn('tax')?o.taxY:0))/12;
+  const sched = carSchedule(car), consPerMonth = (car.cons/100) * state.km/12;
+  for(let m=1;m<=M;m++){
+    if(tlOn('energy')) sm[m] += o.forward ? consPerMonth*priceAt(sched, m-1) : o.energyY/12;
+    sm[m] += insTaxPerM;
+    if(cash){ if(tlOn('pmt')) sm[m] += lf.pmt[m]; if(tlOn('balloon')) st[m] += lf.balloon[m]; }
+    else if(tlOn('dep') || tlOn('fin')) sm[m] += (tlOn('dep') ? dep[m]-dep[m-1] : 0) + (tlOn('fin') ? lf.interest[m] + lf.fee[m] : 0);
+  }
+  const odo1 = o.odo0 + M/12*state.km;
+  if(tlOn('maint')) placeEvents(eventMonths(MAINT_SCHEDULE[car.fuel] || MAINT_SCHEDULE.bensiini, o.odo0, odo1), o.maintTotal, M, sm, st);
+  if(tlOn('tires')) placeEvents(eventMonths([{km:TIRE_KM,cost:1}], o.odo0, odo1), o.tiresTotal, M, sm, st);
+  if(o.start){
+    const base = car.owned ? car.origPrice : car.price, n = car.loanMonths||0;
+    if(tlOn(cash ? 'setup' : 'fin')) st[0] += (car.setupFee||0);
+    if(cash && tlOn('down')) st[0] += (n<=0 ? base : Math.min(base, car.downPayment||0));
+  }
+  if(cash && o.sale && tlOn('sale')) st[M] += lf.payoff - car.resale;
+  return {sm, st, M};
+}
+function toPoints(p, x0, base){
+  const pts = []; let cum = base;
+  if(p.st[0]){ pts.push({x:x0,y:cum}); cum += p.st[0]; }
+  pts.push({x:x0,y:cum});
+  for(let m=1;m<=p.M;m++){
+    cum += p.sm[m]; pts.push({x:x0+m/12,y:cum});
+    if(p.st[m]){ cum += p.st[m]; pts.push({x:x0+m/12,y:cum}); }
+  }
+  return {pts, end:cum};
+}
+function buildTimelineData(mode){
+  const owned = state.cars.find(c=>c.owned);
+  const N = Math.max(1, Math.round(state.years)), M = N*12, km = state.km;
+  const startYear = owned ? Math.min(owned.purchaseYear||owned.year, YEAR_NOW) : YEAR_NOW;
+  const endYear = YEAR_NOW + N;
+  const series = state.cars.map((car,idx)=>{
+    const fc = computeCar(car);
+    let h = null, hist = null;
+    const py = Math.min(car.purchaseYear||car.year, YEAR_NOW);
+    if(car.owned){
+      h = computeHistorical(car);
+      const yo = h.yearsOwned;
+      hist = monthlyPeriod(car, mode, {M:yo*12, loanOff:0, odo0:Math.max(0,py-car.year)*km, totalDep:Math.max(0,car.origPrice-car.price), energyY:h.energy, forward:false, insY:car.insurance, taxY:car.tax, maintTotal:car.maint*km*yo, tiresTotal:car.tires*yo, start:true, sale:false});
+    }
+    const fwd = monthlyPeriod(car, mode, {M, loanOff:car.owned?h.yearsOwned*12:0, odo0:Math.max(0,YEAR_NOW-car.year)*km, totalDep:Math.max(0,car.price-car.resale), energyY:fc.energy, forward:true, insY:fc.insurance, taxY:fc.tax, maintTotal:fc.maint*N, tiresTotal:fc.tires*N, start:!car.owned, sale:true});
+    const f0 = toPoints(fwd, YEAR_NOW, 0);
+    let points = f0.pts, historyReal = null, histTotal = 0;
+    if(car.owned){
+      const hp = toPoints(hist, py, 0), hs = toPoints(hist, py, -hp.end);
+      histTotal = hp.end;
+      points = hs.pts.concat(f0.pts);
+      historyReal = hp.pts.concat(toPoints(fwd, YEAR_NOW, hp.end).pts);
+    }
+    return {label:(car.label||car.name)+(car.owned?' 🏠':''), points, historyReal, color:COLORS[idx%4], fwdTotal:f0.end, histTotal};
+  });
+  return {series, startYear, endYear};
+}
+function setTlMode(m){ state.tlMode = m; tlYView = null; save(); renderTimeline(); }
+function tlToggle(k){ state.tlOff = state.tlOff || {}; if(state.tlOff[k]) delete state.tlOff[k]; else state.tlOff[k] = true; tlGet('cost').yView=null; save(); renderTimeline(); }
+function tlAllOn(){ state.tlOff = {}; tlGet('cost').yView=null; save(); renderTimeline(); }
+// ===== Yleiskäyttöinen zoomattava/vedettävä/hover-kaaviomoottori (useampi instanssi id:n mukaan) =====
+const tlState = {};
+function tlGet(id){ return tlState[id] || (tlState[id] = {cache:null, view:null, domain:null, yView:null}); }
+const TL_W=880, TL_H=380, TL_PAD={l:70,r:16,t:16,b:34};
+const FI_MONTHS = ['tammikuu','helmikuu','maaliskuu','huhtikuu','toukokuu','kesäkuu','heinäkuu','elokuu','syyskuu','lokakuu','marraskuu','joulukuu'];
+function tlLabel(x){ const y=Math.floor(x+1e-9); const m=Math.min(11,Math.floor((x-y)*12+1e-6)); return FI_MONTHS[m]+' '+y; }
+function tlYAt(pts,x){ let r=null; for(let i=1;i<pts.length;i++){ const a=pts[i-1], b=pts[i]; if(b.x>a.x && x>=a.x && x<=b.x) r=a.y+(b.y-a.y)*(x-a.x)/(b.x-a.x); } return r; }
+function tlClamp(id,x0,x1){ const d=tlGet(id).domain, span=x1-x0; if(span>=d.b-d.a-1e-9) return null; if(x0<d.a){x0=d.a;x1=d.a+span;} if(x1>d.b){x1=d.b;x0=d.b-span;} return {x0,x1}; }
+function tlCurView(id){ const g=tlGet(id); return g.view || {x0:g.domain.a, x1:g.domain.b}; }
+function tlZoom(id,factor,cx){
+  const g=tlGet(id), v=tlCurView(id), span=v.x1-v.x0, ns=Math.max(1/6, Math.min(g.domain.b-g.domain.a, span*factor));
+  const x0 = cx-(cx-v.x0)/span*ns;
+  g.view = tlClamp(id,x0,x0+ns); drawChart(id);
+}
+function tlZoomBtn(id,f){ const sc=tlGet(id).cache.sc, v=tlCurView(id); tlZoomY(id,f,(sc.yLo+sc.yHi)/2); tlZoom(id,f,(v.x0+v.x1)/2); }
+function tlReset(id){ const g=tlGet(id); g.view=null; g.yView=null; drawChart(id); }
+function tlYAuto(id){ tlGet(id).yView=null; drawChart(id); }
+// Euroakselin zoomaus itsenäisesti: cy = kohta (€), jonka ympäriltä zoomataan.
+function tlZoomY(id,factor,cy){
+  const g=tlGet(id), sc=g.cache.sc, span=sc.yHi-sc.yLo, auto=sc.autoHi-sc.autoLo, ns=Math.max(300, span*factor);
+  if(ns>=auto-1e-6) g.yView=null;
+  else { const lo=cy-(cy-sc.yLo)/span*ns; g.yView={lo, hi:lo+ns}; }
+  drawChart(id);
+}
+function tlZoomYBtn(id,f){ const sc=tlGet(id).cache.sc; tlZoomY(id,f,(sc.yLo+sc.yHi)/2); }
+function niceStep(range, zoomed){
+  const seq=[100,250,500,1000,2500,5000,10000,20000,50000,100000,200000]; let i=seq.indexOf(5000);
+  while(i<seq.length-1 && range/seq[i]>18) i++;
+  if(zoomed) while(i>0 && range/seq[i]<5) i--;
+  return seq[i];
+}
+// lines: [{label,color,pts:[{x,y}],tag,dash}]. extraDraw(xOf,yOf) voi palauttaa ylimääräistä SVG:tä (esim. risteymäpiste).
+function drawChart(id){
+  const g=tlGet(id), {lines, startYear, endYear, extraDraw} = g.cache;
+  const W=TL_W, H=TL_H, pad=TL_PAD, plotW=W-pad.l-pad.r, plotH=H-pad.t-pad.b;
+  const v = tlCurView(id), zoomed = !!g.view, span = v.x1-v.x0;
+  const ys = [];
+  lines.forEach(L=>{
+    L.pts.forEach(p=>{ if(!zoomed || (p.x>=v.x0 && p.x<=v.x1)) ys.push(p.y); });
+    if(zoomed) [v.x0,v.x1].forEach(x=>{ const y=tlYAt(L.pts,x); if(y!==null) ys.push(y); });
+  });
+  if(!ys.length) ys.push(0);
+  let yLo, yHi, step;
+  if(!zoomed){
+    const mn=Math.min(0,...ys), mx=Math.max(0,...ys);
+    step = niceStep(mx-mn, false);
+    yLo = Math.floor(mn/step)*step; yHi = Math.max(yLo+step, Math.ceil(mx/step)*step);
+  } else {
+    let mn=Math.min(...ys), mx=Math.max(...ys); const pd=Math.max((mx-mn)*0.08, 250);
+    yLo = mn-pd; yHi = mx+pd; step = niceStep(yHi-yLo, true);
+  }
+  const autoLo=yLo, autoHi=yHi;
+  if(g.yView){ yLo=g.yView.lo; yHi=g.yView.hi; step=niceStep(yHi-yLo,true); }
+  const xOf = x => pad.l + (x-v.x0)/span*plotW;
+  const yOf = y => pad.t + plotH - (y-yLo)/(yHi-yLo)*plotH;
+  const xs = [1/12,1/4,1/2,1,2,5,10,20]; let xst = xs.find(q=>span/q<=9) || 20;
+  let grid='', labels='';
+  for(let k=Math.ceil(v.x0/xst-1e-9); k*xst<=v.x1+1e-9; k++){
+    const t=k*xst, px=xOf(t).toFixed(1);
+    grid += `<line x1="${px}" y1="${pad.t}" x2="${px}" y2="${H-pad.b}" stroke="var(--line)" stroke-width="1"/>`;
+    const y0=Math.floor(t+1e-9), mIdx=Math.min(11,Math.round((t-y0)*12));
+    labels += `<text x="${px}" y="${H-pad.b+18}" font-size="11" fill="var(--muted)" text-anchor="middle">${xst>=1 ? y0 : FI_MONTHS[mIdx].slice(0,3)+' '+y0}</text>`;
+  }
+  for(let gr=Math.ceil(yLo/step-1e-9); gr*step<=yHi+1e-9; gr++){
+    const val=gr*step, yy=yOf(val).toFixed(1), emph=val===0;
+    grid += `<line x1="${pad.l}" y1="${yy}" x2="${W-pad.r}" y2="${yy}" stroke="${emph?'var(--ink)':'var(--line)'}" stroke-width="${emph?1.5:1}"/>`;
+    labels += `<text x="${pad.l-8}" y="${(yOf(val)+4).toFixed(1)}" font-size="11" fill="var(--muted)" text-anchor="end">${fmt(val)} €</text>`;
+  }
+  let nowLine='';
+  if(YEAR_NOW>v.x0 && YEAR_NOW<v.x1 && startYear<YEAR_NOW){
+    nowLine = `<line x1="${xOf(YEAR_NOW)}" y1="${pad.t}" x2="${xOf(YEAR_NOW)}" y2="${H-pad.b}" stroke="var(--brass)" stroke-width="1.5" stroke-dasharray="4,3"/><text x="${xOf(YEAR_NOW)}" y="${pad.t-2}" font-size="10" fill="var(--brass)" text-anchor="middle">nyt</text>`;
+  }
+  const pl = pts => pts.map(p=>`${xOf(p.x).toFixed(1)},${yOf(Math.max(yLo-step,p.y)).toFixed(1)}`).join(' ');
+  const paths = lines.map(L=> L.dash
+    ? `<polyline points="${pl(L.pts)}" fill="none" stroke="${L.color}" stroke-width="2" stroke-dasharray="6,4" opacity="0.75" stroke-linejoin="round"/>`
+    : `<polyline points="${pl(L.pts)}" fill="none" stroke="${L.color}" stroke-width="2.5" stroke-linejoin="round"/>`).join('');
+  const extra = extraDraw ? extraDraw(xOf,yOf) : '';
+  document.getElementById(id+'Base').innerHTML = `${grid}${labels}${nowLine}<g clip-path="url(#${id}Clip)">${paths}${extra}</g>`;
+  g.cache.sc = {v, xOf, yOf, lines, span, yLo, yHi, autoLo, autoHi};
+  const zi = document.getElementById(id+'ZoomInfo');
+  if(zi) zi.textContent = (zoomed ? `Aika: ${tlLabel(v.x0)} – ${tlLabel(v.x1)}` : 'Aika: koko jakso') + (g.yView ? ` · Euroakseli: ${fmt(yLo)} – ${fmt(yHi)} €` : ' · Euroakseli: automaattinen');
+}
+function tlHover(id,e,vx,vy){
+  const g=tlGet(id), sc=g.cache.sc, pad=TL_PAD, tip=document.getElementById(id+'Tip'), dot=document.getElementById(id+'Dot'), cross=document.getElementById(id+'Cross');
+  const hide=()=>{ tip.style.display='none'; dot.setAttribute('r','0'); cross.setAttribute('y2', String(TL_PAD.t)); };
+  if(vx<pad.l || vx>TL_W-pad.r || vy<pad.t || vy>TL_H-pad.b){ hide(); return; }
+  let best=null;
+  sc.lines.forEach(L=>{
+    for(let i=1;i<L.pts.length;i++){
+      const a=L.pts[i-1], b=L.pts[i], ax=sc.xOf(a.x), ay=sc.yOf(a.y), bx=sc.xOf(b.x), by=sc.yOf(b.y);
+      const dx=bx-ax, dy=by-ay, len2=dx*dx+dy*dy;
+      let t = len2>0 ? ((vx-ax)*dx+(vy-ay)*dy)/len2 : 0; t=Math.max(0,Math.min(1,t));
+      const px=ax+t*dx, py=ay+t*dy, d=Math.hypot(vx-px,vy-py);
+      if(!best || d<best.d) best={d, px, py, x:a.x+t*(b.x-a.x), y:a.y+t*(b.y-a.y), L};
+    }
+  });
+  if(!best || best.d>32){ hide(); return; }
+  dot.setAttribute('cx',best.px); dot.setAttribute('cy',best.py); dot.setAttribute('r','5'); dot.setAttribute('fill',best.L.color);
+  cross.setAttribute('x1',best.px); cross.setAttribute('x2',best.px); cross.setAttribute('y1',pad.t); cross.setAttribute('y2',TL_H-pad.b);
+  const rel = best.x - YEAR_NOW;
+  tip.innerHTML = `<div style="font-weight:600;color:${best.L.color}">${best.L.label}${best.L.tag||''}</div><div>${tlLabel(best.x)} <span style="color:var(--muted)">(nyt ${rel>=0?'+':'−'}${Math.abs(rel).toFixed(1).replace('.',',')} v)</span></div><div style="font-family:'IBM Plex Mono',monospace;font-weight:600">${fmt(best.y)} €</div>`;
+  tip.style.display='block';
+  const rc = document.getElementById(id+'Chart').getBoundingClientRect();
+  let left = e.clientX-rc.left+14, top = e.clientY-rc.top+14;
+  if(left+tip.offsetWidth > rc.width) left = e.clientX-rc.left-tip.offsetWidth-14;
+  tip.style.left = Math.max(0,left)+'px'; tip.style.top = top+'px';
+}
+function attachChartEvents(id){
+  const svg=document.getElementById(id+'Svg');
+  if(!svg || !svg.getBoundingClientRect) return;
+  const plotW=TL_W-TL_PAD.l-TL_PAD.r, plotH=TL_H-TL_PAD.t-TL_PAD.b;
+  const toV = e => { const r=svg.getBoundingClientRect(); return {vx:(e.clientX-r.left)*TL_W/r.width, vy:(e.clientY-r.top)*TL_H/r.height}; };
+  let drag=null;
+  svg.addEventListener('wheel', e=>{
+    e.preventDefault();
+    const {vx,vy}=toV(e), sc=tlGet(id).cache.sc, v=sc.v, f=((e.deltaY||e.deltaX)<0) ? 0.8 : 1.25;
+    const cy = sc.yLo + (TL_H-TL_PAD.b-vy)/plotH*(sc.yHi-sc.yLo);
+    tlZoomY(id,f,cy);
+    if(e.shiftKey) return;
+    const cx = Math.max(v.x0, Math.min(v.x1, v.x0+(vx-TL_PAD.l)/plotW*(v.x1-v.x0)));
+    tlZoom(id,f,cx);
+  }, {passive:false});
+  svg.addEventListener('pointerdown', e=>{ const p=toV(e), g=tlGet(id); drag={vx:p.vx, vy:p.vy, v:Object.assign({},g.cache.sc.v), yv:{lo:g.cache.sc.yLo,hi:g.cache.sc.yHi}, moved:false}; if(svg.setPointerCapture) try{ svg.setPointerCapture(e.pointerId); }catch(_){} });
+  svg.addEventListener('pointermove', e=>{
+    const p=toV(e), g=tlGet(id);
+    if(drag){
+      if(Math.abs(p.vx-drag.vx)>3 || Math.abs(p.vy-drag.vy)>3) drag.moved=true;
+      if(drag.moved && (g.view || g.yView)){
+        if(g.view){ const sp=drag.v.x1-drag.v.x0, sh=-(p.vx-drag.vx)/plotW*sp; g.view = tlClamp(id,drag.v.x0+sh, drag.v.x1+sh) || g.view; }
+        if(g.yView){ const rng=drag.yv.hi-drag.yv.lo, sh=(p.vy-drag.vy)/plotH*rng; g.yView={lo:drag.yv.lo+sh, hi:drag.yv.hi+sh}; }
+        drawChart(id); document.getElementById(id+'Tip').style.display='none'; return;
+      }
+    }
+    tlHover(id,e,p.vx,p.vy);
+  });
+  const end = ()=>{ drag=null; };
+  svg.addEventListener('pointerup', end); svg.addEventListener('pointercancel', end);
+  svg.addEventListener('pointerleave', ()=>{ document.getElementById(id+'Tip').style.display='none'; document.getElementById(id+'Dot').setAttribute('r','0'); });
+  svg.addEventListener('dblclick', ()=>tlReset(id));
+}
+// Piirtää kaavion rungon (svg+tooltip-elementit) annettuun säiliöön ja asettaa domain/view-logiikan.
+function mountChart(id, containerId, startYear, endYear){
+  const g = tlGet(id);
+  if(!g.domain || g.domain.a!==startYear || g.domain.b!==endYear){ g.domain={a:startYear,b:endYear}; g.view=null; g.yView=null; }
+  else if(g.view) g.view = tlClamp(id, g.view.x0, g.view.x1);
+  const W=TL_W,H=TL_H,pad=TL_PAD;
+  const chart = document.getElementById(containerId);
+  chart.style.position = 'relative';
+  chart.innerHTML = `<svg id="${id}Svg" viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;touch-action:pan-y;cursor:crosshair;user-select:none" xmlns="http://www.w3.org/2000/svg">
+      <defs><clipPath id="${id}Clip"><rect x="${pad.l}" y="${pad.t}" width="${W-pad.l-pad.r}" height="${H-pad.t-pad.b}"/></clipPath></defs>
+      <g id="${id}Base"></g>
+      <g pointer-events="none"><line id="${id}Cross" x1="0" y1="${pad.t}" x2="0" y2="${pad.t}" stroke="var(--muted)" stroke-width="1" stroke-dasharray="3,3"/><circle id="${id}Dot" r="0" cx="0" cy="0" stroke="var(--paper)" stroke-width="2"/></g>
+    </svg>
+    <div id="${id}Tip" style="position:absolute;display:none;pointer-events:none;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px;padding:.4rem .6rem;font-size:.82rem;line-height:1.35;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:5;white-space:nowrap"></div>`;
+}
+function zoomControlsHtml(id){
+  return `<button class="reset-btn" onclick="tlZoomBtn('${id}',0.6)" title="Lähennä molempia akseleita">＋</button><button class="reset-btn" onclick="tlZoomBtn('${id}',1.6)" title="Loitonna molempia akseleita">－</button><button class="reset-btn" onclick="tlZoomYBtn('${id}',0.5)" title="Lähennä euroakselia">€＋</button><button class="reset-btn" onclick="tlZoomYBtn('${id}',2)" title="Loitonna euroakselia">€－</button><button class="reset-btn" onclick="tlYAuto('${id}')" title="Euroakseli automaattiseksi">€ auto</button><button class="reset-btn" onclick="tlReset('${id}')">Koko jakso</button>`;
+}
+const ZOOM_HELP = 'Vie hiiri viivan päälle nähdäksesi ajan ja arvon. Rulla zoomaa sekä aikaa että euroja hiiren kohdalta, Shift+rulla vain euroakselia (ruudukko tihenee zoomatessa). Vetämällä siirrät näkymää, kaksoisklikkaus palauttaa koko jakson.';
+
+function renderTimeline(){
+  const wrap = document.getElementById('timelinePanel');
+  wrap.style.display = 'block';
+  const mode = state.tlMode==='cash' ? 'cash' : 'cost';
+  const btn = (k,l)=>`<button class="reset-btn" style="${mode===k?'background:var(--moss);color:var(--paper);border-color:var(--moss)':''}" onclick="setTlMode('${k}')">${l}</button>`;
+  document.getElementById('timelineModeBar').innerHTML =
+    btn('cost','Kulut (arvonalenema + korot)') + btn('cash','Kassavirta (käsiraha, erät, loppuerä)') +
+    `<span style="flex:1"></span>${zoomControlsHtml('cost')}`;
+  const offCount = (TL_CATS[mode]||[]).filter(([k])=>!tlOn(k)).length;
+  document.getElementById('timelineFilterBar').innerHTML =
+    `<span style="font-size:.82rem;color:var(--muted)">Huomioitavat kulut:</span>` +
+    TL_CATS[mode].map(([k,l])=>`<label class="chip${tlOn(k)?' on':''}"><input type="checkbox" ${tlOn(k)?'checked':''} onchange="tlToggle('${k}')">${l}</label>`).join('') +
+    (offCount ? `<button class="reset-btn" onclick="tlAllOn()">Palauta kaikki</button>` : '');
+  const data = buildTimelineData(mode), {series, startYear, endYear} = data;
+  const lines = [];
+  series.forEach(s=>{
+    lines.push({label:s.label, color:s.color, pts:s.points, tag:'', dash:false});
+    if(s.historyReal) lines.push({label:s.label, color:s.color, pts:s.historyReal, tag:' (katkoviiva: ilman origoon siirtoa)', dash:true});
+  });
+  mountChart('cost','timelineChart',startYear,endYear);
+  tlGet('cost').cache = {lines, startYear, endYear};
+  const note = mode==='cash'
+    ? 'Kassavirta: käsiraha ja perustamismaksu ostohetkellä, kuukausierät, loppuerä lainan päättyessä, huollot ja renkaat oikeina ajankohtina. Jakson lopussa auto myydään: jäljellä oleva laina maksetaan pois ja myyntihinta vähennetään.'
+    : 'Kulut: arvonalenema (epälineaarinen), korot ja maksut, energia, vakuutus, vero, huollot ja renkaat kirjattuna oikeisiin ajankohtiin. Käsiraha ja loppuerä eivät ole kuluja vaan rahoittavat auton hinnan, joka näkyy arvonalenemana — ne näkyvät Kassavirta-näkymässä.';
+  const extra = series.some(s=>s.historyReal) ? 'Katkoviiva omistetulla autolla = kertymä ilman origoon siirtoa. ' : '';
+  document.getElementById('timelineLegend').innerHTML = series.map(s=>
+    `<span style="display:flex;align-items:center;gap:.4rem"><span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block"></span>${s.label} — ${fmt(s.fwdTotal)} € jakson lopussa${offCount?' (valituilla kuluilla)':''}${s.historyReal?` (toteutunut tähän asti ${fmt(s.histTotal)} €)`:''}</span>`
+  ).join('') + `<span style="color:var(--muted);width:100%">${extra}Nollataso = tämä hetki. ${note}</span><span style="color:var(--muted);width:100%">${ZOOM_HELP} <strong id="costZoomInfo"></strong></span>`;
+  drawChart('cost');
+  attachChartEvents('cost');
+}
+
+function financeRows(fc, car, N){
+  const M = N*12;
+  const rows = [
+    {label:'Lyhennys', total:fc.principalPeriod, once:false, gross:true,  fin:false},
+    {label:'Korko', total:fc.interestPeriod, once:false, gross:true,  fin:true},
+    {label:'Kuukausittaiset käsittelymaksut', total:fc.feesPeriod, once:false, gross:true, fin:true},
+  ];
+  if(fc.setupPeriod>0) rows.push({label:'Perustamismaksu', total:fc.setupPeriod, once:true, gross:false, fin:true});
+  if(fc.balloonInPeriod>0) rows.push({label:'Loppuerä (jäännösarvo)', total:fc.balloonInPeriod, once:true, gross:true, fin:false});
+  const grossTotal = rows.filter(r=>r.gross).reduce((s,r)=>s+r.total,0);
+  const finTotal = rows.filter(r=>r.fin).reduce((s,r)=>s+r.total,0);
+  const cell = v => `${fmt(v)} €`;
+  const rowHtml = r => `<tr><td>${r.label}${r.once?' <span style="color:var(--muted);font-size:.78em">(kertaluonteinen)</span>':''}</td>
+    <td>${cell(r.total)}</td><td>${cell(r.total/N)}</td><td>${cell(r.total/M)}</td>
+    <td style="text-align:center;color:${r.gross?'var(--moss)':'var(--muted)'}">${r.gross?'✓':'—'}</td>
+    <td style="text-align:center;color:${r.fin?'var(--moss)':'var(--muted)'}">${r.fin?'✓':'—'}</td></tr>`;
+  return `<table style="width:100%;font-size:.85rem;margin:.3rem 0 .6rem">
+    <thead><tr>
+      <th style="text-align:left">Erä</th><th>Koko kausi (${N} v)</th><th>€ / vuosi</th><th>€ / kk</th>
+      <th title="Lyhennys+korko+maksut(+loppuerä) — autokaupan ilmoittama rahoituskulu">Kokonais-<br>maksut</th>
+      <th title="Vain korko+maksut+perustaminen — tämä on mukana laskurin Yhteensä-rivillä">Rahoitus-<br>kulu</th>
+    </tr></thead>
+    <tbody>${rows.map(rowHtml).join('')}
+      <tr class="total"><td>= Rahoituksen kokonaismaksut</td><td>${cell(grossTotal)}</td><td>${cell(grossTotal/N)}</td><td>${cell(grossTotal/M)}</td><td style="text-align:center">✓</td><td></td></tr>
+      <tr class="total"><td>= Rahoituskulut (Yhteensä-rivillä)</td><td>${cell(finTotal)}</td><td>${cell(finTotal/N)}</td><td>${cell(finTotal/M)}</td><td></td><td style="text-align:center">✓</td></tr>
+    </tbody></table>
+    <p style="font-size:.78rem;color:var(--muted);margin:0 0 .6rem">Kokonaismaksut-sarake vastaa lukua, jonka autokaupat yleensä ilmoittavat rahoituksen hinnaksi (sisältää lyhennyksen). Rahoituskulu-sarake on se osa, joka lasketaan laskurin Yhteensä-riviin — lyhennys ei, koska se näkyy jo Arvonalenema-rivillä eikä sitä lasketa kahteen kertaan.</p>`;
+}
+// Auton arvo (€) kuukausittain purchaseYear:sta endYear:iin, epälineaarista käyrää pitkin (sama käyrä kuin kululaskennassa).
+function buildDepreciationData(){
+  const N = Math.max(1, Math.round(state.years));
+  const owned = state.cars.find(c=>c.owned);
+  const startYear = owned ? Math.min(owned.purchaseYear||owned.year, YEAR_NOW) : YEAR_NOW;
+  const endYear = YEAR_NOW + N;
+  const series = state.cars.map((car,idx)=>{
+    const pts = [];
+    if(car.owned){
+      const yo = Math.max(1, YEAR_NOW - (car.purchaseYear||car.year));
+      const histDep = depCumMonthly(car, Math.max(0,car.origPrice-car.price), yo*12);
+      for(let m=0;m<=yo*12;m++) pts.push({x:(car.purchaseYear||car.year)+m/12, y:car.origPrice-histDep[m]});
+    }
+    const fwdDep = depCumMonthly(car, Math.max(0,car.price-car.resale), N*12);
+    for(let m=0;m<=N*12;m++) pts.push({x:YEAR_NOW+m/12, y:car.price-fwdDep[m]});
+    return {label:(car.label||car.name)+(car.owned?' 🏠':''), pts, color:COLORS[idx%4], carRef:car};
+  });
+  let loan = null;
+  if(owned && owned.loanMonths>0){
+    const yo = Math.max(1, YEAR_NOW - (owned.purchaseYear||owned.year));
+    const loanOff0 = 0, totalM = yo*12 + N*12;
+    const pts = [];
+    for(let m=0;m<=totalM;m++) pts.push({x:(owned.purchaseYear||owned.year)+m/12, y: loanState(owned.origPrice, owned.downPayment, owned.loanMonths, owned.balloon, owned.financeRate, owned.monthlyFee, owned.setupFee, m).balance});
+    const valueSeries = series.find(s=>s.carRef===owned).pts;
+    // etsitään risteymäkohta (arvo - laina vaihtaa merkkiä)
+    let crossing = null;
+    for(let i=1;i<pts.length;i++){
+      const vPrev = valueSeries[i-1].y - pts[i-1].y, vNow = valueSeries[i].y - pts[i].y;
+      if(vPrev!==0 && vNow!==0 && (vPrev<0)!==(vNow<0)){
+        const t = vPrev/(vPrev-vNow);
+        const x = pts[i-1].x + (pts[i].x-pts[i-1].x)*t;
+        const y = pts[i-1].y + (pts[i].y-pts[i-1].y)*t;
+        crossing = {x,y};
+      }
+    }
+    loan = {pts, crossing};
+  }
+  return {series, loan, startYear, endYear};
+}
+function renderDepreciationChart(){
+  const panel = document.getElementById('depPanel');
+  const {series, loan, startYear, endYear} = buildDepreciationData();
+  panel.style.display = 'block';
+  const lines = series.map(s=>({label:s.label+' — arvo', color:s.color, pts:s.pts, tag:'', dash:false}));
+  if(loan) lines.push({label:'Jäljellä oleva laina', color:'var(--bad)', pts:loan.pts, tag:'', dash:true});
+  const extraDraw = (xOf,yOf) => {
+    if(!loan || !loan.crossing) return '';
+    const cx=xOf(loan.crossing.x).toFixed(1), cy=yOf(loan.crossing.y).toFixed(1);
+    return `<circle cx="${cx}" cy="${cy}" r="5" fill="var(--moss)" stroke="var(--paper)" stroke-width="2"/>
+      <text x="${cx}" y="${(+cy-10)}" font-size="11" fill="var(--moss)" text-anchor="middle" font-weight="600">${tlLabel(loan.crossing.x)}</text>`;
+  };
+  mountChart('dep','depChart',startYear,endYear);
+  tlGet('dep').cache = {lines, startYear, endYear, extraDraw};
+  let legend = series.map(s=>`<span style="display:flex;align-items:center;gap:.4rem"><span style="width:10px;height:10px;border-radius:50%;background:${s.color};display:inline-block"></span>${s.label} — arvo</span>`).join('');
+  if(loan){
+    legend += `<span style="display:flex;align-items:center;gap:.4rem"><span style="width:16px;height:2px;background:var(--bad);display:inline-block;border-top:2px dashed var(--bad)"></span>Jäljellä oleva laina</span>`;
+    legend += loan.crossing
+      ? `<span style="color:var(--moss);width:100%">● Tasapainopiste ${tlLabel(loan.crossing.x)}: auton arvo = lainan määrä (${fmt(loan.crossing.y)} €). Myytäessä tämän jälkeen ei jää loppuvelkaa.</span>`
+      : `<span style="color:var(--muted);width:100%">Auton arvo ja lainan määrä eivät risteä näkyvällä aikavälillä — ${series.find(s=>s.carRef===state.cars.find(c=>c.owned)).pts[0].y > loan.pts[0].y ? 'arvo pysyy koko ajan lainaa suurempana' : 'laina pysyy koko ajan arvoa suurempana (auto "miinuksella")'}.</span>`;
+  }
+  legend += `<span style="color:var(--muted);width:100%">${ZOOM_HELP} <strong id="depZoomInfo"></strong></span>
+    <span style="display:flex;gap:.5rem;width:100%">${zoomControlsHtml('dep')}</span>`;
+  document.getElementById('depLegend').innerHTML = legend;
+  drawChart('dep');
+  attachChartEvents('dep');
+}
+function fLine(label, formula, value){
+  return `<div class="formula-line"><span class="formula-label">${label}</span><span>${formula} = <strong>${fmt(value)} €</strong></span></div>`;
+}
+function renderFormulas(){
+  const panel = document.getElementById('formulaPanel');
+  const parts = state.cars.map(car=>{
+    const fc = computeCar(car);
+    const unit = fc.fuel==='sähkö' ? 'kWh' : 'l';
+    const N = fc.years;
+    const depSched = depSchedule(car, fc.depreciation*N, N);
+    const maintSched = maintSchedule(car, fc.maint*N, N);
+    let html = '';
+    html += fLine('Energia', `${fc.cons}/100 × ${fmt(fc.km)} km × ${fc.pricePerUnit.toFixed(2)} €/${unit}`, fc.energy);
+    html += fLine('Arvonalenema (keskim.)', `(${fmt(fc.price)} € − ${fmt(fc.resale)} €) / ${fc.years} v`, fc.depreciation);
+    html += fLine('Vakuutus', `syötetty €/v`, fc.insurance);
+    html += fLine('Ajoneuvovero', `syötetty €/v`, fc.tax);
+    html += fLine('Huolto ja korjaukset (keskim.)', `${fc.maintRate} €/km × ${fmt(fc.km)} km`, fc.maint);
+    html += fLine('Renkaat', `syötetty €/v`, fc.tires);
+    if(fc.monthlyPayment>0){
+      const fin = financeRows(fc, car, N);
+      html += `<div class="formula-line" style="border-top:2px solid var(--line);padding-top:.5rem;margin-top:.2rem"><span class="formula-label" style="font-weight:600;color:var(--ink)">Rahoitus eriteltynä — kuukausierä ${fc.monthlyPayment.toFixed(2)} €/kk (${N} v = ${N*12} kk)</span><span></span></div>`;
+      html += fin;
+    } else {
+      html += fLine('Rahoituskulut', `ei rahoitusta (laina-aika tai -osuus 0)`, fc.finance);
+    }
+    if(fc.shortfall>0) html += `<div class="formula-line" style="color:var(--bad)"><span class="formula-label">Alijäämä myyntihetkellä</span><span>laina ${fmt(fc.resale+fc.shortfall)} € − myyntiarvo ${fmt(fc.resale)} € = <strong>${fmt(fc.shortfall)} €</strong> maksettava käteisellä (sisältyy jo arvonalenemaan, ei lisäkulu)</span></div>`;
+    html += fLine('Yhteensä / vuosi', `summa kaikista riveistä (lyhennystä EI lasketa kahdesti)`, fc.total);
+    let yearRows = '';
+    for(let k=0;k<N;k++){
+      yearRows += `<tr><td>Vuosi ${k+1}</td><td>${fmt(depSched[k])} €</td><td>${fmt(maintSched[k])} €</td></tr>`;
+    }
+    const yearTable = `<p style="font-size:.85rem;color:var(--muted);margin:.8rem 0 .4rem">Epälineaarinen jakauma vuosittain (arvonalenema nopeampi alkuvuosina, huolto km-ohjelman mukaan):</p>
+      <table style="font-size:.85rem"><thead><tr><th style="text-align:left">Vuosi</th><th>Arvonalenema</th><th>Huolto</th></tr></thead><tbody>${yearRows}</tbody></table>`;
+    return `<details open><summary>${fc.label} — ${fmt(fc.total)} €/v (${fc.perKm.toFixed(2)} €/km)</summary>${html}${yearTable}</details>`;
+  }).join('');
+  panel.innerHTML = `<h2>Kulut auki laskettuna</h2>${parts}`;
+}
+
+function renderAll(){ renderAssumptions(); renderCars(); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas(); }
+
+document.getElementById('km').addEventListener('input', e=>{ state.km = parseFloat(e.target.value)||0; save(); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas(); });
+document.getElementById('years').addEventListener('input', e=>{ state.years = parseFloat(e.target.value)||1; save(); renderResults(); renderHistory(); renderTimeline(); renderDepreciationChart(); renderFormulas(); });
+document.getElementById('resetBtn').addEventListener('click', ()=>{ state = defaultState(); save(); renderAll(); });
+
+load();
+renderAll();
+</script>
+</body>
+</html>
